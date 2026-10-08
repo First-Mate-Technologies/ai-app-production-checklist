@@ -17,6 +17,7 @@ The rule behind it: the agent that built the code does not grade the code. Cases
 - Never run destructive database commands (drop, truncate, delete without a test-only filter, migrations against a shared DB). Never hit production or a real third party (Stripe, email, SMS, LLM APIs). Test against a local or throwaway instance only.
 - Do not edit app code and do not install dependencies without the user saying yes to that specific thing. Writing files under `qa/` is fine.
 - If you cannot verify something, say so. Do not claim a case passed unless you ran it.
+- Do not end your turn to ask about requirements. Unless the user wrote "ask me first", the default is to continue through step 3 in the same turn, with assumptions flagged, and put the questions in the final summary. The only question that blocks work is the execution question in step 4.
 - Plain writing in everything you produce. No em dashes.
 
 ## Steps
@@ -25,7 +26,7 @@ The rule behind it: the agent that built the code does not grade the code. Cases
 
 Read README and docs, route and page files, forms, API handlers, DB schema and migrations, auth and role code. Write `qa/REQUIREMENTS.md` using `references/templates.md`: numbered user-facing behaviors (`R-01`...), roles, money and data flows, stated limits, and assumptions. Also write `qa/SURFACE.md`: the public surface only (URLs, HTTP methods, request fields and their stated limits, roles, visible UI states). No code, no internals.
 
-Interactive chat where the user is present: show the requirements summary and ask them to confirm or correct it before step 2. Headless or unsure (`claude -p`, `codex exec`, any run where you cannot be sure a reply will come): do NOT stop and wait. Proceed through step 3, mark every guess under `## Assumptions` in the file, repeat the assumptions in your final summary, and invite corrections there. Stopping to ask is only right when the user can actually answer.
+Only if the user asked to review requirements first (for example "ask me first"): show the requirements summary and wait for confirmation before step 2. Headless or unsure (`claude -p`, `codex exec`, any run where you cannot be sure a reply will come): do NOT stop and wait. Proceed through step 3, mark every guess under `## Assumptions` in the file, repeat the assumptions in your final summary, and invite corrections there. Stopping to ask is only right when the user can actually answer.
 
 ### 2. Independent case design
 
