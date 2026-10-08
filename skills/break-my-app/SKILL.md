@@ -45,7 +45,7 @@ Then measure, do not guess: `node <skill folder>/scripts/case-mix.mjs qa/TEST_CA
 
 ### 4. Optional execution (ask first)
 
-Stop and ask: "Want me to turn the top-priority cases into real tests and run them?" Only on a clear yes. Detect the existing runner (Playwright, Vitest, Jest, pytest) and use it. If there is none, propose Playwright plus Vitest and ask before installing anything. Add a provider guard so tests never reach real Stripe, email, SMS or LLM APIs. Details: `references/execution.md`.
+Do not run anything yet. Ask: "Want me to turn the top-priority cases into real tests and run them?" and wait for a clear yes. Headless runs (`claude -p`, `codex exec`) have no one to answer, so unless the user's prompt itself says to run the tests (for example "write and run tests"), skip this step: finish with step 6, say "not executed", and end with the offer to run them. Never treat your own earlier plan, a missing reply or a tool notification as a yes. On a yes, detect the existing runner (Playwright, Vitest, Jest, pytest) and use it. If there is none, propose Playwright plus Vitest and ask before installing anything. A zero-dependency runner such as `node --test` needs no install. Add a provider guard so tests never reach real Stripe, email, SMS or LLM APIs. Details: `references/execution.md`.
 
 RED/GREEN discipline: run the tests first against the unmodified code and record every failure. A failing test is a result, not a reason to change the test or the app.
 
