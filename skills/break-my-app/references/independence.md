@@ -46,4 +46,6 @@ Cross-agent option for the user: build with one tool and run this skill's design
 
 ## Reporting
 
+A subagent spawned inside Codex inherits the session model unless you can set it, so by default that is `fresh context only`, even if the subagent labels itself otherwise. Only an explicit `codex exec -m <other-model>` run, or a subagent whose model you set and can name, earns `different model`. The `Designed by:` line must name the designer model and the builder model.
+
 Write the level at the top of `qa/TEST_CASES.md` and in the final summary. If you are unsure whether the models differ, say `fresh context only`.

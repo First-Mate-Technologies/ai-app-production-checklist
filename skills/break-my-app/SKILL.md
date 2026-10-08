@@ -32,7 +32,7 @@ Only if the user asked to review requirements first (for example "ask me first")
 
 The designer must not be the agent that wrote the code, and ideally not the one that read it. Run design in a fresh subagent that receives ONLY `qa/REQUIREMENTS.md`, `qa/SURFACE.md` and `references/attack-angles.md` plus `references/templates.md`, and is told not to open source code. If the host lets you choose a model for the subagent, pick one different from the builder's. Exact mechanics for Claude Code and Codex: `references/independence.md`.
 
-Record the level you actually achieved, and never claim more:
+Record the level you actually achieved, and never claim more. Claim `different model` only if you explicitly set the designer's model yourself and it differs from your own; write both model names in the `Designed by:` line (for example "designer: sonnet, builder: opus"). A subagent whose model you did not choose, or cannot name, counts as `fresh context only`.
 
 - `different model + fresh context`: subagent on a different model, requirements only.
 - `fresh context only`: subagent on the same model, or you could not confirm the model differs.
