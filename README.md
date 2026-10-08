@@ -30,21 +30,35 @@ It prints findings grouped by severity with `file:line`. Add `--json` for machin
 
 **3. Work the checklist.** Go through [CHECKLIST.md](CHECKLIST.md) top to bottom. Anything you cannot answer in the first three sections (data, auth, payments) is a launch blocker.
 
-## Use it as an AI agent skill
+## Use it as AI agent skills
 
-The kit also ships as a skill for Claude Code and Codex. Ask your agent "is my app ready to launch?" and it detects your stack, runs the scanner, walks the checklist against your actual code, and writes a prioritized `PRODUCTION_READINESS.md` with `file:line` evidence. It is read-only: it never edits code or touches your database without your say-so, and it never prints secret values.
+The kit ships two skills for Claude Code and Codex.
+
+**`production-readiness`** audits your app before launch. Ask "is my app ready to launch?" and it detects your stack, runs the scanner, walks the checklist against your actual code, and writes a prioritized `PRODUCTION_READINESS.md` with `file:line` evidence. It is read-only: it never edits code or touches your database without your say-so, and it never prints secret values.
+
+**`break-my-app`** is the QA method from the QueueMate story above. It writes `qa/REQUIREMENTS.md` from your code and docs, has a separate designer (a fresh subagent, ideally on a different model) write `qa/TEST_CASES.md` weighted toward edge, negative, boundary, security, concurrency and time zone cases, and reports the real happy-path share. With your yes it turns the top cases into tests in your own runner, with a guard so they never hit real Stripe, email or LLM APIs, runs them, and files every failure in `qa/DEFECTS.md` before any fix. It tells you honestly how independent the case designer was.
 
 ```sh
 git clone https://github.com/First-Mate-Technologies/ai-app-production-checklist
 cd ai-app-production-checklist
-scripts/install-skill.sh claude            # ~/.claude/skills/production-readiness
-scripts/install-skill.sh codex             # ~/.agents/skills/production-readiness
-scripts/install-skill.sh claude --project  # ./.claude/skills/ (commit it for your team)
+scripts/install-skill.sh claude                 # both skills into ~/.claude/skills/
+scripts/install-skill.sh codex                  # both skills into ~/.agents/skills/
+scripts/install-skill.sh claude --project       # ./.claude/skills/ (commit it for your team)
+scripts/install-skill.sh codex --skill break-my-app   # just one skill
 ```
 
-The script copies local files only (no network, no sudo), prints what it does, and refuses to overwrite an existing install unless you pass `--force`. It bundles the scanner, the checklist and the SQL audit into the skill folder so it works standalone. Restart the agent if the skill does not show up. By hand: copy `skills/production-readiness/` to `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` (Codex), or into `.claude/skills/` or `.agents/skills/` inside a project. A hand copy has no bundled scanner, so the skill falls back to `npx github:First-Mate-Technologies/ai-app-production-checklist`.
+Options: `--project` installs into the current folder, `--force` replaces an existing install, `--skill production-readiness|break-my-app|all` picks the skill (default `all`). The script copies local files only (no network, no sudo), prints what it does, and refuses to overwrite an existing install unless you pass `--force`. `production-readiness` bundles the scanner, the checklist and the SQL audit; `break-my-app` bundles a small helper that counts your case mix. Restart the agent if a skill does not show up. By hand: copy `skills/<name>/` to `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` (Codex), or into `.claude/skills/` or `.agents/skills/` inside a project. A hand copy of `production-readiness` has no bundled scanner, so it falls back to `npx github:First-Mate-Technologies/ai-app-production-checklist`.
 
-The skill's frontmatter uses only `name` and `description`, the two fields both agents read. Claude Code also supports fields like `allowed-tools`; Codex documents only the two, so the kit leaves the rest out. There is no plugin manifest yet.
+Example prompts:
+
+- `is my app ready to launch?` or `audit my vibe-coded app before I go live`
+- `try to break my app and write test cases`
+- `QA my app` or `what edge cases am I missing?`
+- `find bugs before users do`, then answer "yes, run the tests" when it asks
+
+For the strongest `break-my-app` result, build with one tool and let the other design the cases (for example build in Claude Code, design in Codex), or at least run the design step on a different model. Without that, the skill says "fresh context only" or "none" in its summary instead of claiming independence it did not have.
+
+The skills' frontmatter uses only `name` and `description`, the two fields both agents read. Claude Code also supports fields like `allowed-tools`; Codex documents only the two, so the kit leaves the rest out. There is no plugin manifest yet.
 
 ## What the scanner checks
 
