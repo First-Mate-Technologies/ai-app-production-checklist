@@ -110,3 +110,15 @@ test("README headless claude examples allow the Skill tool", () => {
   assert.ok(lines.length >= 2);
   for (const l of lines) assert.ok(l.includes('"Skill"'), `missing Skill: ${l}`);
 });
+
+test("break-my-app references keep the round-2 rules", () => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const rd = (f) => readFileSync(path.join(root, "skills/break-my-app", f), "utf8");
+  assert.match(rd("SKILL.md"), /always `fresh context only` unless the designer ran in a separate `codex exec -m/);
+  assert.match(rd("references/independence.md"), /never write a name you did not read/);
+  assert.match(rd("references/attack-angles.md"), /SAME user repeats the same action/);
+  assert.match(rd("references/attack-angles.md"), /Stored XSS/);
+  assert.match(rd("references/execution.md"), /hard cap of 60 generated tests/);
+  assert.match(rd("references/execution.md"), /more than about 10 seconds/);
+  assert.match(readFileSync(path.join(root, "README.md"), "utf8"), /Design only/);
+});

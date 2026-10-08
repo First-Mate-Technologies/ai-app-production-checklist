@@ -10,7 +10,7 @@ No runner: propose Playwright for browser flows and Vitest for logic and API che
 
 ## 2. Which cases first
 
-All P0 cases, then P1 until you hit a sensible budget (about 30 to 60 tests, tell the user the number). Keep the case ID in each test name (`B-013 midnight booking groups under the right day`) so failures map back to `qa/TEST_CASES.md`. Skip cases that need a real third party or production and mark them `NOT RUN` with the reason.
+All P0 cases, then P1 by severity, up to a hard cap of 60 generated tests per run (tell the user the number). List every case beyond the cap as `NOT RUN (over the 60-test cap)`. No single test may wait more than about 10 seconds: use fake timers or short timeouts and mock providers that fail fast instead of waiting 60 s. Keep the case ID in each test name (`B-013 midnight booking groups under the right day`) so failures map back to `qa/TEST_CASES.md`. Skip cases that need a real third party or production and mark them `NOT RUN` with the reason.
 
 ## 3. Provider guard
 
@@ -21,6 +21,8 @@ Tests must never reach a real provider. Real examples of what goes wrong: an E2E
 - Add one guard test: with the test env, the app must use mock adapters (or fail closed) and no outbound request to a real provider host happens. Prefer a guard in the app that refuses to build live providers outside production.
 - Point the database at a throwaway instance (local SQLite file, local Docker Postgres, a temp schema). Never at a shared or production database. Check the connection string target before any write and never print it.
 - Use fixture data created by the tests themselves, with reserved domains such as `@example.com` only against mocks.
+
+Run the suite as one plain command with output sent to a file, for example `node --test qa/tests/ > qa/test-run.log 2>&1`, then read the log. Pipes and `&&` chains can be denied in headless runs. Keep scratch files under `qa/`, not `/tmp`.
 
 ## 4. RED first
 

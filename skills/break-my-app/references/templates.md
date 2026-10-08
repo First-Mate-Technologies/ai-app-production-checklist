@@ -46,7 +46,7 @@ Header, then one block per case, grouped into areas with a letter (A auth, B boo
 
 ```markdown
 # Test cases: <app>
-Designed by: <model/context>. Independence: <level>.
+Designed by: designer: <model name>, builder: <model name from the session header>. Independence: <level>.
 
 ## Area B: Bookings
 

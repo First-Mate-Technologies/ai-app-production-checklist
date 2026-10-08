@@ -9,6 +9,7 @@ Pick the sections that match the app. For each requirement ask: what is the leas
 - Wrong types via the API: number as string, array instead of string, null, missing field, extra field (mass assignment: `role`, `userId`, `price`).
 - Double submit and rapid repeat clicks, submit then back button then submit, refresh after POST.
 - Client validation bypassed: call the API directly with the invalid payload.
+- Stored XSS: user-entered text (names, notes, titles, comments) rendered back into a page or email unescaped (`<img src=x onerror=...>`, `"><script>`), including in admin views and `innerHTML` code paths.
 - Negative, zero, fractional and huge numbers; dates in the past, far future, Feb 29, invalid dates.
 
 ## Auth and roles
@@ -52,6 +53,7 @@ Pick the sections that match the app. For each requirement ask: what is the leas
 
 ## Concurrency
 - Two tabs or two users take the last seat, slot, coupon or stock item at once. Double booking.
+- The SAME user repeats the same action (books the same slot twice, submits the same form twice, applies the same coupon twice). Uniqueness checks often exclude the caller's own rows, so test this separately from two different users competing.
 - Read-modify-write races (counters, balances). Undo in one tab after another tab changed the same item.
 - Retry after timeout creates a duplicate. Optimistic UI that never rolls back when the server rejects.
 - Offline then online, stale tab polling forever after the item reaches a final state.

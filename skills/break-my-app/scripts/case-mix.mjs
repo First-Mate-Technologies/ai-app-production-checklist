@@ -90,6 +90,20 @@ if (reqPath) {
   for (const r of traced.keys()) if (!requirements.includes(r)) warnings.push(`Cases trace to ${r}, which is not in ${reqPath}`);
 }
 
+// Independence honesty: "different model" needs two distinct, named models.
+const by = text.match(/^\s*Designed by:\s*(.+)$/im);
+if (by) {
+  const line = by[1];
+  const level = (line.match(/Independence:\s*([^\n]+)/i)?.[1] ?? "").trim().toLowerCase();
+  const names = line.match(/designer:?\s*(.+?)\s*[,;]\s*builder[^:]*:?\s*(.+?)(?:\.\s|\.$|$)/i);
+  const norm = (n) => n.toLowerCase().replace(/[^a-z0-9.]+/g, "");
+  if (level.startsWith("different model")) {
+    if (!names) warnings.push('Independence says "different model" but the Designed by line does not name both models (use "designer: X, builder: Y")');
+    else if (norm(names[1]) === norm(names[2])) warnings.push(`Designer and builder are both "${names[1].trim()}", so independence is "fresh context only", not "different model"`);
+    else if (/^(unknown|unnamed|n\/a|none|\?|gpt-?5|a different model|another model)$/i.test(names[2].trim())) warnings.push(`Builder model "${names[2].trim()}" is unknown or generic; read it from the session header, or report "fresh context only"`);
+  }
+}
+
 const result = { file: casesPath, total, happy, happyShare: Number(share.toFixed(3)), byType, byPriority, requirements: requirements.length, warnings };
 if (json) console.log(JSON.stringify(result, null, 2));
 else {

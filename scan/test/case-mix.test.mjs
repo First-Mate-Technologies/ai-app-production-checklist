@@ -78,3 +78,29 @@ test("case-mix accepts em dash and hyphen headings and handles an empty or missi
     assert.equal(run(["--bogus"]).status, 2);
   } finally { cleanup(dir); }
 });
+
+const withDesigned = (line) => {
+  const dir = withFiles(`Designed by: ${line}\n\n` + c("A-001", "edge") + c("A-002", "negative") + c("A-003", "security"));
+  return { dir, out: run([path.join(dir, "TEST_CASES.md")]) };
+};
+
+test("case-mix warns when 'different model' names equal or unknown models", () => {
+  for (const [line, re] of [
+    ["designer: gpt-5.6-sol, builder: gpt-5.6-sol. Independence: different model + fresh context.", /both "gpt-5.6-sol"/],
+    ["designer: gpt-5.6-sol, builder: unknown. Independence: different model + fresh context.", /unknown or generic/],
+    ["gpt-5.6-sol. Independence: different model + fresh context.", /does not name both models/],
+  ]) {
+    const { dir, out } = withDesigned(line);
+    try { assert.equal(out.status, 1, line); assert.match(out.stdout, re); } finally { cleanup(dir); }
+  }
+});
+
+test("case-mix accepts honest independence lines", () => {
+  for (const line of [
+    "designer: sonnet, builder: opus. Independence: different model + fresh context.",
+    "designer: gpt-5.6-sol, builder: gpt-5.6-sol. Independence: fresh context only.",
+  ]) {
+    const { dir, out } = withDesigned(line);
+    try { assert.equal(out.status, 0, out.stdout); } finally { cleanup(dir); }
+  }
+});
