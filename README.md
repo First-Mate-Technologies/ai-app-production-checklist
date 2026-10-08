@@ -74,7 +74,9 @@ claude -p "try to break my app and write test cases" --allowedTools "Skill" "Rea
 codex exec -s workspace-write "try to break my app and write test cases"
 ```
 
-Keep `"Skill"` in the list: without it, headless Claude Code denies the skill call and may report that the skill failed to load. A headless `production-readiness` run takes about 3 to 8 minutes and costs roughly $0.5 to $1.5 in Claude Code (about 40k to 55k tokens in Codex). It writes `PRODUCTION_READINESS.md` without asking, and it never installs dependencies or runs your tests, linter or build.
+`codex exec` only runs inside a git repository. If your app folder is not one, run `git init` first or add `--skip-git-repo-check`.
+
+Keep `"Skill"` in the list: without it, headless Claude Code denies the skill call and may report that the skill failed to load. A headless `production-readiness` run takes about 3 to 8 minutes and costs roughly $0.5 to $1.5 in Claude Code (in Codex, about 4 to 5 minutes and roughly 350k to 700k input tokens, most of them cached). It writes `PRODUCTION_READINESS.md` without asking, and it never installs dependencies or runs your tests, linter or build.
 
 `break-my-app` costs more than the audit. Rough numbers from our runs (Claude Code; Codex takes similar time):
 
