@@ -2,6 +2,7 @@
 name: break-my-app
 description: >-
   Try to break a web app before users do. Derives acceptance criteria into qa/REQUIREMENTS.md, has an independent designer (fresh subagent, ideally a different model) write qa/TEST_CASES.md weighted toward edge, negative, boundary, security, concurrency and time zone cases, then optionally runs them and files every failure in qa/DEFECTS.md before any fix. Use when the user says "write test cases for my app", "try to break my app", "QA my app", "what edge cases am I missing", "find bugs before users do", "test plan" or "break my app". Never edits app code, installs dependencies or hits production without explicit confirmation.
+allowed-tools: Bash(node *)
 ---
 
 # Break my app
@@ -40,7 +41,7 @@ Record the level you actually achieved, and never claim more:
 
 The designer writes `qa/TEST_CASES.md` in the format of `references/templates.md`: IDs by area (`A-001`), title, type (happy, edge, negative, boundary, security, concurrency, timezone, role), priority P0-P2, preconditions, steps, expected result, and the requirement it traces to. Use `references/attack-angles.md` per feature type. Instruct the designer to weight against the happy path: target at most about 15% happy, and every requirement gets at least one non-happy case.
 
-Then measure, do not guess: `node <skill folder>/scripts/case-mix.mjs qa/TEST_CASES.md` prints the count and mix and warns if happy path exceeds 15% or a requirement has no case. If it warns, send the designer back to fix it. The skill folder is where this `SKILL.md` lives (`find ~/.claude/skills ~/.agents/skills .claude/skills .agents/skills -path '*break-my-app/SKILL.md'` if unsure).
+Then measure, do not guess: `node <skill folder>/scripts/case-mix.mjs qa/TEST_CASES.md` prints the count and mix and warns if happy path exceeds 15% or a requirement has no case. Run it exactly as written, with no shell chaining. If it warns, send the designer back to fix it. The skill folder is where this `SKILL.md` lives (`find ~/.claude/skills ~/.agents/skills .claude/skills .agents/skills -path '*break-my-app/SKILL.md'` if unsure).
 
 ### 4. Optional execution (ask first)
 

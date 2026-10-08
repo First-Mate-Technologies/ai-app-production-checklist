@@ -28,7 +28,9 @@ for (const name of names) {
       if (!line.startsWith("description:") && !line.startsWith("  ")) assert.match(line, /^[a-z-]+: /);
     }
     const keys = lines.filter((l) => /^[a-z-]+:/.test(l)).map((l) => l.split(":")[0]);
-    assert.deepEqual(keys, ["name", "description"]);
+    assert.deepEqual(keys, ["name", "description", "allowed-tools"]);
+    const allowed = lines.find((l) => l.startsWith("allowed-tools:"));
+    assert.ok(!allowed.slice("allowed-tools:".length).includes(": "), "allowed-tools must parse as a plain YAML scalar");
     assert.ok(match[1].length < 1500, "frontmatter too long");
   });
 

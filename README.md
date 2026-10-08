@@ -58,7 +58,17 @@ Example prompts:
 
 For the strongest `break-my-app` result, build with one tool and let the other design the cases (for example build in Claude Code, design in Codex), or at least run the design step on a different model. Without that, the skill says "fresh context only" or "none" in its summary instead of claiming independence it did not have.
 
-The skills' frontmatter uses only `name` and `description`, the two fields both agents read. Claude Code also supports fields like `allowed-tools`; Codex documents only the two, so the kit leaves the rest out. There is no plugin manifest yet.
+`--project` installs into the current directory's `.claude/skills/` or `.agents/skills/`, so run it from the root of your app, not from this repo. On Windows, run the script from Git Bash or WSL, or copy `skills/<name>/` into the same folders by hand.
+
+The frontmatter has `name` and `description` plus one extra field, `allowed-tools`, which pre-approves the few commands each skill needs (`node ...` for the scanner and the case-mix helper). Claude Code reads it; Codex ignores fields it does not know (checked with Codex CLI 0.154). Without it, a headless Claude Code run cannot run the scanner under `--permission-mode acceptEdits`. If your setup ignores the field, pass the tools yourself:
+
+```sh
+claude -p "is my app ready to launch?" --allowedTools "Read" "Write" "Glob" "Grep" "Bash(node *)" "Bash(npx *)"
+claude -p "try to break my app and write test cases" --allowedTools "Read" "Write" "Edit" "Glob" "Grep" "Agent" "Bash(node *)"
+codex exec -s workspace-write "try to break my app and write test cases"
+```
+
+Interactive users just approve the prompts. There is no plugin manifest yet.
 
 ## What the scanner checks
 

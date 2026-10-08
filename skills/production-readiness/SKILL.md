@@ -2,6 +2,7 @@
 name: production-readiness
 description: >-
   Audit an AI-built or vibe-coded web app (Lovable, Bolt, Replit, Cursor, v0, Supabase, Stripe, Next.js) for launch blockers and write a prioritized PRODUCTION_READINESS.md. Use when the user asks "is my app ready to launch", "audit my vibe-coded app", "production readiness", "check my Supabase RLS", "before I launch", "security review before go-live", or wants to find leaked keys, missing auth checks, unverified Stripe webhooks or missing edge-case tests. Read-only: never edits code or writes to a database without explicit confirmation.
+allowed-tools: Bash(node *) Bash(npx --yes github:First-Mate-Technologies/*)
 ---
 
 # Production readiness audit
@@ -30,7 +31,7 @@ This skill folder is the directory containing this `SKILL.md` (your agent shows 
 2. `node <repo>/scan/cli.mjs <project> --json` when running inside a clone of the kit.
 3. `npx --yes github:First-Mate-Technologies/ai-app-production-checklist <project> --json` (needs Node 20+ and network; downloads the kit, scans locally, sends nothing).
 
-Exit code 1 means at least one HIGH finding; that is a result, not a failure. Exit code 2 is a usage error. Read `findings` and `notes`; every note is something the scan could not do. Details of each rule: `references/evidence-guide.md`.
+Run the command exactly as written: no `; echo $?`, `&&`, pipes or other shell chaining (they can trip permission rules; the exit code is reported to you anyway). Exit code 1 means at least one HIGH finding; that is a result, not a failure. Exit code 2 is a usage error. Read `findings` and `notes`; every note is something the scan could not do. Details of each rule: `references/evidence-guide.md`.
 
 ### 3. Supabase (only if the project uses it)
 
