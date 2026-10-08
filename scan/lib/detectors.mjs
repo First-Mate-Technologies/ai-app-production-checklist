@@ -143,14 +143,23 @@ export function isPlaceholder(value) {
 }
 
 /** True if the text holds a real-looking secret: a Stripe key, a webhook secret, or a Supabase secret key. */
+export function secretKinds(text) {
+  const out = [];
+  const add = (re, label, kindOf) => {
+    for (const m of text.matchAll(re)) {
+      if (isPlaceholder(m[0])) continue;
+      out.push(`${kindOf ? kindOf(m) : label} (${mask(m[0])})`);
+    }
+  };
+  add(STRIPE_KEY, "", (m) => `Stripe ${m[2] === "live" ? "live" : "test"} ${m[1] === "rk" ? "restricted" : "secret"} key`);
+  add(WEBHOOK_SECRET, "Stripe webhook signing secret");
+  add(SB_SECRET_KEY, "Supabase secret key");
+  for (const m of text.matchAll(JWT)) if (isServiceRoleJwt(m[0])) out.push(`Supabase service_role key (${mask(m[0])})`);
+  return [...new Set(out)];
+}
+
 export function hasSecretShapedValue(text) {
-  const live = (re) => [...text.matchAll(re)].some((m) => !isPlaceholder(m[0]));
-  return (
-    live(STRIPE_KEY) ||
-    live(WEBHOOK_SECRET) ||
-    live(SB_SECRET_KEY) ||
-    [...text.matchAll(JWT)].some((m) => isServiceRoleJwt(m[0]))
-  );
+  return secretKinds(text).length > 0;
 }
 
 const SLASH_LANGS = new Set([".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".vue", ".svelte", ".astro", ".php", ".go"]);

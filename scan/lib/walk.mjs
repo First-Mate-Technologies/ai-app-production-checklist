@@ -7,6 +7,9 @@ export const MAX_BYTES = 1024 * 1024; // files larger than 1 MB are skipped
 export const SKIP_DIRS = new Set([
   "node_modules",
   ".git",
+  // Agent skill installs (project-level) bundle copies of scanner code, docs and checklists.
+  ".claude",
+  ".agents",
   ".next",
   ".nuxt",
   ".output",

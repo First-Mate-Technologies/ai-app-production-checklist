@@ -30,21 +30,64 @@ It prints findings grouped by severity with `file:line`. Add `--json` for machin
 
 **3. Work the checklist.** Go through [CHECKLIST.md](CHECKLIST.md) top to bottom. Anything you cannot answer in the first three sections (data, auth, payments) is a launch blocker.
 
-## Use it as an AI agent skill
+## Use it as AI agent skills
 
-The kit also ships as a skill for Claude Code and Codex. Ask your agent "is my app ready to launch?" and it detects your stack, runs the scanner, walks the checklist against your actual code, and writes a prioritized `PRODUCTION_READINESS.md` with `file:line` evidence. It is read-only: it never edits code or touches your database without your say-so, and it never prints secret values.
+The kit ships two skills for Claude Code and Codex.
+
+**`production-readiness`** audits your app before launch. Ask "is my app ready to launch?" and it detects your stack, runs the scanner, walks the checklist against your actual code, and writes a prioritized `PRODUCTION_READINESS.md` with `file:line` evidence. It is read-only: it never edits code or touches your database without your say-so, and it never prints secret values.
+
+**`break-my-app`** is the QA method from the QueueMate story above. It writes `qa/REQUIREMENTS.md` from your code and docs, has a separate designer (a fresh subagent, ideally on a different model) write `qa/TEST_CASES.md` weighted toward edge, negative, boundary, security, concurrency and time zone cases, and reports the real happy-path share. With your yes it turns the top cases into tests in your own runner, with a guard so they never hit real Stripe, email or LLM APIs, runs them, and files every failure in `qa/DEFECTS.md` before any fix. It tells you honestly how independent the case designer was.
 
 ```sh
 git clone https://github.com/First-Mate-Technologies/ai-app-production-checklist
 cd ai-app-production-checklist
-scripts/install-skill.sh claude            # ~/.claude/skills/production-readiness
-scripts/install-skill.sh codex             # ~/.agents/skills/production-readiness
-scripts/install-skill.sh claude --project  # ./.claude/skills/ (commit it for your team)
+bash scripts/install-skill.sh claude                 # both skills into ~/.claude/skills/
+bash scripts/install-skill.sh codex                  # both skills into ~/.agents/skills/
+bash scripts/install-skill.sh codex --skill break-my-app   # just one skill
 ```
 
-The script copies local files only (no network, no sudo), prints what it does, and refuses to overwrite an existing install unless you pass `--force`. It bundles the scanner, the checklist and the SQL audit into the skill folder so it works standalone. Restart the agent if the skill does not show up. By hand: copy `skills/production-readiness/` to `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` (Codex), or into `.claude/skills/` or `.agents/skills/` inside a project. A hand copy has no bundled scanner, so the skill falls back to `npx github:First-Mate-Technologies/ai-app-production-checklist`.
+To install into one app only (commit it for your team), run the script from that app's root folder:
 
-The skill's frontmatter uses only `name` and `description`, the two fields both agents read. Claude Code also supports fields like `allowed-tools`; Codex documents only the two, so the kit leaves the rest out. There is no plugin manifest yet.
+```sh
+cd /path/to/your-app
+bash /path/to/ai-app-production-checklist/scripts/install-skill.sh claude --project   # ./.claude/skills/
+```
+
+Options: `--project` installs into the current folder, `--force` replaces an existing install, `--skill production-readiness|break-my-app|all` picks the skill (default `all`). The script copies local files only (no network, no sudo), prints what it does, and refuses to overwrite an existing install unless you pass `--force`. `production-readiness` bundles the scanner, the checklist and the SQL audit; `break-my-app` bundles a small helper that counts your case mix. Restart the agent if a skill does not show up. By hand: copy `skills/<name>/` to `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` (Codex), or into `.claude/skills/` or `.agents/skills/` inside a project. A hand copy of `production-readiness` has no bundled scanner, so it falls back to `npx github:First-Mate-Technologies/ai-app-production-checklist`.
+
+Example prompts:
+
+- `is my app ready to launch?` or `audit my vibe-coded app before I go live`
+- `try to break my app and write test cases`
+- `QA my app` or `what edge cases am I missing?`
+- `find bugs before users do`, then answer "yes, run the tests" when it asks
+
+For the strongest `break-my-app` result, build with one tool and let the other design the cases (for example build in Claude Code, design in Codex), or at least run the design step on a different model. Without that, the skill says "fresh context only" or "none" in its summary instead of claiming independence it did not have.
+
+`--project` installs into the current directory's `.claude/skills/` or `.agents/skills/`, so run it from the root of your app, not from this repo. On Windows, run the script from Git Bash or WSL, or copy `skills/<name>/` into the same folders by hand.
+
+The frontmatter has `name` and `description` plus one extra field, `allowed-tools`, which names the few commands each skill needs (`node ...` for the scanner and the case-mix helper). Claude Code reads it and Codex ignores fields it does not know (checked with Codex CLI 0.154). In our test, `claude -p` under `--permission-mode acceptEdits` still asked for approval on the scanner command, so for headless runs pass the tools yourself:
+
+```sh
+claude -p "is my app ready to launch?" --allowedTools "Skill" "Read" "Write" "Glob" "Grep" "Bash(node *)" "Bash(npx *)"
+claude -p "try to break my app and write test cases" --allowedTools "Skill" "Read" "Write" "Edit" "Glob" "Grep" "Agent" "Bash(node *)"
+codex exec -s workspace-write "try to break my app and write test cases"
+```
+
+`codex exec` only runs inside a git repository. If your app folder is not one, run `git init` first or add `--skip-git-repo-check`.
+
+Keep `"Skill"` in the list: without it, headless Claude Code denies the skill call and may report that the skill failed to load. A headless `production-readiness` run takes about 3 to 8 minutes and costs roughly $0.5 to $1.5 in Claude Code (in Codex, about 4 to 5 minutes and roughly 350k to 700k input tokens, most of them cached). It writes `PRODUCTION_READINESS.md` without asking, and it never installs dependencies or runs your tests, linter or build.
+
+`break-my-app` costs more than the audit. Rough numbers from our runs (Claude Code; Codex takes similar time):
+
+| Run | Time | Cost (Claude Code) |
+| --- | --- | --- |
+| Design only (`try to break my app`) | about 6 to 10 min | about $1 to $1.20 |
+| With test execution (`... and yes, run the tests`) | about 15 to 27 min | about $2.50 to $3.50 |
+
+Everything runs on your own agent subscription or API key; the kit sends nothing anywhere.
+
+Interactive users just approve the prompts. There is no plugin manifest yet.
 
 ## What the scanner checks
 
@@ -54,7 +97,7 @@ The skill's frontmatter uses only `name` and `description`, the two fields both 
 | `public-env-secret` | HIGH | A variable with a public prefix (`NEXT_PUBLIC_`, `VITE_`, `EXPO_PUBLIC_`, `REACT_APP_`) whose name contains SECRET, SERVICE_ROLE, PRIVATE, SK_LIVE, SK_TEST or STRIPE_SECRET |
 | `committed-env-file` | HIGH (MEDIUM for `.env.test` and `.env.ci` without a secret-shaped value) | A `.env*` file (other than `.env.example`-style templates and `.env.vault`) that git tracks |
 | `stripe-secret-key` | HIGH for `sk_live_` and `rk_live_`, MEDIUM for test keys | A Stripe secret key in any source file |
-| `stripe-webhook-unverified` | HIGH | A Stripe webhook handler when nothing in the project calls `constructEvent` (MEDIUM if another file does) |
+| `stripe-webhook-unverified` | HIGH | A Stripe webhook handler when nothing in the project calls `constructEvent` (MEDIUM if another file does; this can be a false positive when a helper file only maps events and the route verifies) |
 | `gitignore-missing-env` | HIGH for an env file on disk that no `.gitignore` rule covers (MEDIUM for `.env.test`/`.env.ci`), LOW if there is no env file and `.env` is not ignored | `.gitignore` coverage of every env file |
 | `service-role-hardcoded` | MEDIUM | A `service_role` JWT or `sb_secret` key hard-coded in server code, or in a file the scanner cannot place on the server or the browser |
 | `stripe-webhook-secret` | HIGH | A Stripe webhook signing secret (`whsec_`) in source |

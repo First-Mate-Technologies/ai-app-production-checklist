@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { walk } from "./walk.mjs";
-import { scanFile, isEnvFile, isEnvExample, isLowRiskEnv, hasSecretShapedValue } from "./detectors.mjs";
+import { scanFile, isEnvFile, isEnvExample, isLowRiskEnv, secretKinds } from "./detectors.mjs";
 import { isIgnoredByGitignore } from "./gitignore.mjs";
 import { trackedFiles, isIgnored, GitError } from "./git.mjs";
 
@@ -60,6 +60,7 @@ export function scanProject(rootArg = ".") {
   const webhookCandidates = [];
   const envFilesOnDisk = [];
   const envHasSecret = new Map();
+  const envKinds = new Map();
 
   for (const f of files) {
     const realEnv = isEnvFile(f.rel) && !isEnvExample(f.rel);
@@ -77,7 +78,11 @@ export function scanProject(rootArg = ".") {
     }
     scanned++;
     const text = buf.toString("utf8");
-    if (realEnv) envHasSecret.set(f.rel, hasSecretShapedValue(text));
+    if (realEnv) {
+      const kinds = secretKinds(text);
+      envHasSecret.set(f.rel, kinds.length > 0);
+      envKinds.set(f.rel, kinds);
+    }
     const result = scanFile({ rel: f.rel, text, spaProject, nextProject });
     findings.push(...result.findings);
     if (result.verifies) anyVerify = true;
@@ -116,7 +121,9 @@ export function scanProject(rootArg = ".") {
           severity: envSeverity(rel, envHasSecret),
           file: rel,
           line: null,
-          message: "This env file is tracked by git, so its secrets are in the repository history.",
+          message:
+            "This env file is tracked by git, so its secrets are in the repository history." +
+            ((envKinds.get(rel) ?? []).length ? ` It contains: ${envKinds.get(rel).join(", ")}.` : ""),
           fix: "Run git rm --cached on it, add it to .gitignore, and rotate every secret it contained. Removing the file does not remove it from history.",
         });
       }
