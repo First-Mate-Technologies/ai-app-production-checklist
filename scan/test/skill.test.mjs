@@ -84,3 +84,29 @@ test("every file a SKILL.md names under references/ or scripts/ exists in the re
     }
   }
 });
+
+// Release-test findings (round 2): these rules keep headless runs safe and consistent.
+test("production-readiness SKILL.md keeps the safety and severity rules", () => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const t = readFileSync(path.join(root, "skills/production-readiness/SKILL.md"), "utf8");
+  for (const phrase of [
+    "Never run dependency installs or project scripts",
+    "Never quote, print or paste a line that contains a secret",
+    "BLOCKER means code evidence",
+    "never a blocker",
+    "without asking first",
+    "Never say the skill failed to load",
+    "No launch blockers found in the code we could check",
+  ]) assert.ok(t.includes(phrase), `SKILL.md lost: ${phrase}`);
+  const tpl = readFileSync(path.join(root, "skills/production-readiness/references/report-template.md"), "utf8");
+  assert.ok(tpl.includes("No launch blockers found in the code we could check"));
+  assert.ok(tpl.includes('cannot start with "Ready"'));
+});
+
+test("README headless claude examples allow the Skill tool", () => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const readme = readFileSync(path.join(root, "README.md"), "utf8");
+  const lines = readme.split("\n").filter((l) => l.startsWith("claude -p") && l.includes("--allowedTools"));
+  assert.ok(lines.length >= 2);
+  for (const l of lines) assert.ok(l.includes('"Skill"'), `missing Skill: ${l}`);
+});

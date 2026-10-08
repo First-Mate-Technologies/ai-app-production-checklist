@@ -63,10 +63,12 @@ For the strongest `break-my-app` result, build with one tool and let the other d
 The frontmatter has `name` and `description` plus one extra field, `allowed-tools`, which names the few commands each skill needs (`node ...` for the scanner and the case-mix helper). Claude Code reads it and Codex ignores fields it does not know (checked with Codex CLI 0.154). In our test, `claude -p` under `--permission-mode acceptEdits` still asked for approval on the scanner command, so for headless runs pass the tools yourself:
 
 ```sh
-claude -p "is my app ready to launch?" --allowedTools "Read" "Write" "Glob" "Grep" "Bash(node *)" "Bash(npx *)"
-claude -p "try to break my app and write test cases" --allowedTools "Read" "Write" "Edit" "Glob" "Grep" "Agent" "Bash(node *)"
+claude -p "is my app ready to launch?" --allowedTools "Skill" "Read" "Write" "Glob" "Grep" "Bash(node *)" "Bash(npx *)"
+claude -p "try to break my app and write test cases" --allowedTools "Skill" "Read" "Write" "Edit" "Glob" "Grep" "Agent" "Bash(node *)"
 codex exec -s workspace-write "try to break my app and write test cases"
 ```
+
+Keep `"Skill"` in the list: without it, headless Claude Code denies the skill call and may report that the skill failed to load. A headless `production-readiness` run takes about 3 to 8 minutes and costs roughly $0.5 to $0.8 in Claude Code (about 40k to 55k tokens in Codex). It writes `PRODUCTION_READINESS.md` without asking, and it never installs dependencies or runs your tests, linter or build.
 
 Interactive users just approve the prompts. There is no plugin manifest yet.
 
