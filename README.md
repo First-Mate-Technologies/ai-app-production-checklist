@@ -60,7 +60,7 @@ For the strongest `break-my-app` result, build with one tool and let the other d
 
 `--project` installs into the current directory's `.claude/skills/` or `.agents/skills/`, so run it from the root of your app, not from this repo. On Windows, run the script from Git Bash or WSL, or copy `skills/<name>/` into the same folders by hand.
 
-The frontmatter has `name` and `description` plus one extra field, `allowed-tools`, which pre-approves the few commands each skill needs (`node ...` for the scanner and the case-mix helper). Claude Code reads it; Codex ignores fields it does not know (checked with Codex CLI 0.154). Without it, a headless Claude Code run cannot run the scanner under `--permission-mode acceptEdits`. If your setup ignores the field, pass the tools yourself:
+The frontmatter has `name` and `description` plus one extra field, `allowed-tools`, which names the few commands each skill needs (`node ...` for the scanner and the case-mix helper). Claude Code reads it and Codex ignores fields it does not know (checked with Codex CLI 0.154). In our test, `claude -p` under `--permission-mode acceptEdits` still asked for approval on the scanner command, so for headless runs pass the tools yourself:
 
 ```sh
 claude -p "is my app ready to launch?" --allowedTools "Read" "Write" "Glob" "Grep" "Bash(node *)" "Bash(npx *)"
