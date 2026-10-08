@@ -74,12 +74,10 @@ install_one() {
   echo "  to:   $dest"
   mkdir -p "$dest/references"
   cp "$src/SKILL.md" "$dest/SKILL.md"
-  cp "$src/references/"*.md "$dest/references/"
+  cp -R "$src/references/." "$dest/references/"
   case "$s" in
     production-readiness)
       mkdir -p "$dest/scripts/scan"
-      cp "$kit/CHECKLIST.md" "$dest/references/CHECKLIST.md"
-      cp "$kit/sql/supabase-rls-audit.sql" "$dest/references/supabase-rls-audit.sql"
       cp "$kit/scan/cli.mjs" "$dest/scripts/scan/cli.mjs"
       cp -R "$kit/scan/lib" "$dest/scripts/scan/lib"
       # The scanner is ES modules and reads ../package.json for --version.

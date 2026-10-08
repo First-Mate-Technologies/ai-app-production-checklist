@@ -59,3 +59,26 @@ test("break-my-app ends with the exact soft CTA", () => {
   assert.ok(t.includes("https://www.firstmate.tech/vibe-code-rescue?utm_source=skill&utm_medium=referral&utm_campaign=break-my-app"));
   assert.ok(!/restaurants (already )?(use|run)/i.test(t));
 });
+
+// The skill folder must work when hand-copied, so it carries its own copies of the
+// root checklist and SQL audit. They must not drift.
+test("production-readiness bundled references are byte-identical to the root files", () => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  for (const [copy, orig] of [
+    ["skills/production-readiness/references/CHECKLIST.md", "CHECKLIST.md"],
+    ["skills/production-readiness/references/supabase-rls-audit.sql", "sql/supabase-rls-audit.sql"],
+  ]) {
+    assert.ok(readFileSync(path.join(root, copy)).equals(readFileSync(path.join(root, orig))), `${copy} drifted from ${orig}; re-copy it`);
+  }
+});
+
+test("every file a SKILL.md names under references/ or scripts/ exists in the repo copy", () => {
+  for (const name of names) {
+    const dir = path.join(skillsDir, name);
+    const text = readFileSync(path.join(dir, "SKILL.md"), "utf8");
+    for (const ref of text.match(/(?:references|scripts)\/[\w./-]+\.(?:md|sql|mjs)/g) ?? []) {
+      if (ref.startsWith("scripts/scan/")) continue; // bundled by the installer from scan/
+      assert.ok(existsSync(path.join(dir, ref)), `${name}: ${ref}`);
+    }
+  }
+});
