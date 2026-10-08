@@ -10,7 +10,7 @@ No runner: propose Playwright for browser flows and Vitest for logic and API che
 
 ## 2. Which cases first
 
-All P0 cases, then P1 by severity, up to a hard cap of 60 generated tests per run (tell the user the number). List every case beyond the cap as `NOT RUN (over the 60-test cap)`. No single test may wait more than about 10 seconds: use fake timers or short timeouts and mock providers that fail fast instead of waiting 60 s. Keep the case ID in each test name (`B-013 midnight booking groups under the right day`) so failures map back to `qa/TEST_CASES.md`. Skip cases that need a real third party or production and mark them `NOT RUN` with the reason.
+All P0 cases, then P1 by severity, up to a hard cap of 60 generated tests per run, counting every `test(`/`it(` block (tell the user the number). Count them before the first run; if you have more than 60, delete the lowest-severity ones, because 63 or 61 is over the cap. List every case beyond the cap as `NOT RUN (over the 60-test cap)`. No single test may wait more than about 10 seconds: use fake timers or short timeouts and mock providers that fail fast instead of waiting 60 s. Keep the case ID in each test name (`B-013 midnight booking groups under the right day`) so failures map back to `qa/TEST_CASES.md`. Skip cases that need a real third party or production and mark them `NOT RUN` with the reason.
 
 ## 3. Provider guard
 
