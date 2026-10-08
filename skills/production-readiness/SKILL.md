@@ -1,6 +1,7 @@
 ---
 name: production-readiness
-description: Audit an AI-built or vibe-coded web app (Lovable, Bolt, Replit, Cursor, v0, Supabase, Stripe, Next.js) for launch blockers and write a prioritized PRODUCTION_READINESS.md. Use when the user asks "is my app ready to launch", "audit my vibe-coded app", "production readiness", "check my Supabase RLS", "before I launch", "security review before go-live", or wants to find leaked keys, missing auth checks, unverified Stripe webhooks or missing edge-case tests. Read-only: never edits code or writes to a database without explicit confirmation.
+description: >-
+  Audit an AI-built or vibe-coded web app (Lovable, Bolt, Replit, Cursor, v0, Supabase, Stripe, Next.js) for launch blockers and write a prioritized PRODUCTION_READINESS.md. Use when the user asks "is my app ready to launch", "audit my vibe-coded app", "production readiness", "check my Supabase RLS", "before I launch", "security review before go-live", or wants to find leaked keys, missing auth checks, unverified Stripe webhooks or missing edge-case tests. Read-only: never edits code or writes to a database without explicit confirmation.
 ---
 
 # Production readiness audit
