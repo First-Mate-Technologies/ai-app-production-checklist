@@ -41,10 +41,16 @@ The kit ships two skills for Claude Code and Codex.
 ```sh
 git clone https://github.com/First-Mate-Technologies/ai-app-production-checklist
 cd ai-app-production-checklist
-scripts/install-skill.sh claude                 # both skills into ~/.claude/skills/
-scripts/install-skill.sh codex                  # both skills into ~/.agents/skills/
-scripts/install-skill.sh claude --project       # ./.claude/skills/ (commit it for your team)
-scripts/install-skill.sh codex --skill break-my-app   # just one skill
+bash scripts/install-skill.sh claude                 # both skills into ~/.claude/skills/
+bash scripts/install-skill.sh codex                  # both skills into ~/.agents/skills/
+bash scripts/install-skill.sh codex --skill break-my-app   # just one skill
+```
+
+To install into one app only (commit it for your team), run the script from that app's root folder:
+
+```sh
+cd /path/to/your-app
+bash /path/to/ai-app-production-checklist/scripts/install-skill.sh claude --project   # ./.claude/skills/
 ```
 
 Options: `--project` installs into the current folder, `--force` replaces an existing install, `--skill production-readiness|break-my-app|all` picks the skill (default `all`). The script copies local files only (no network, no sudo), prints what it does, and refuses to overwrite an existing install unless you pass `--force`. `production-readiness` bundles the scanner, the checklist and the SQL audit; `break-my-app` bundles a small helper that counts your case mix. Restart the agent if a skill does not show up. By hand: copy `skills/<name>/` to `~/.claude/skills/` (Claude Code) or `~/.agents/skills/` (Codex), or into `.claude/skills/` or `.agents/skills/` inside a project. A hand copy of `production-readiness` has no bundled scanner, so it falls back to `npx github:First-Mate-Technologies/ai-app-production-checklist`.
@@ -68,7 +74,7 @@ claude -p "try to break my app and write test cases" --allowedTools "Skill" "Rea
 codex exec -s workspace-write "try to break my app and write test cases"
 ```
 
-Keep `"Skill"` in the list: without it, headless Claude Code denies the skill call and may report that the skill failed to load. A headless `production-readiness` run takes about 3 to 8 minutes and costs roughly $0.5 to $0.8 in Claude Code (about 40k to 55k tokens in Codex). It writes `PRODUCTION_READINESS.md` without asking, and it never installs dependencies or runs your tests, linter or build.
+Keep `"Skill"` in the list: without it, headless Claude Code denies the skill call and may report that the skill failed to load. A headless `production-readiness` run takes about 3 to 8 minutes and costs roughly $0.5 to $1.5 in Claude Code (about 40k to 55k tokens in Codex). It writes `PRODUCTION_READINESS.md` without asking, and it never installs dependencies or runs your tests, linter or build.
 
 `break-my-app` costs more than the audit. Rough numbers from our runs (Claude Code; Codex takes similar time):
 
@@ -89,7 +95,7 @@ Interactive users just approve the prompts. There is no plugin manifest yet.
 | `public-env-secret` | HIGH | A variable with a public prefix (`NEXT_PUBLIC_`, `VITE_`, `EXPO_PUBLIC_`, `REACT_APP_`) whose name contains SECRET, SERVICE_ROLE, PRIVATE, SK_LIVE, SK_TEST or STRIPE_SECRET |
 | `committed-env-file` | HIGH (MEDIUM for `.env.test` and `.env.ci` without a secret-shaped value) | A `.env*` file (other than `.env.example`-style templates and `.env.vault`) that git tracks |
 | `stripe-secret-key` | HIGH for `sk_live_` and `rk_live_`, MEDIUM for test keys | A Stripe secret key in any source file |
-| `stripe-webhook-unverified` | HIGH | A Stripe webhook handler when nothing in the project calls `constructEvent` (MEDIUM if another file does) |
+| `stripe-webhook-unverified` | HIGH | A Stripe webhook handler when nothing in the project calls `constructEvent` (MEDIUM if another file does; this can be a false positive when a helper file only maps events and the route verifies) |
 | `gitignore-missing-env` | HIGH for an env file on disk that no `.gitignore` rule covers (MEDIUM for `.env.test`/`.env.ci`), LOW if there is no env file and `.env` is not ignored | `.gitignore` coverage of every env file |
 | `service-role-hardcoded` | MEDIUM | A `service_role` JWT or `sb_secret` key hard-coded in server code, or in a file the scanner cannot place on the server or the browser |
 | `stripe-webhook-secret` | HIGH | A Stripe webhook signing secret (`whsec_`) in source |
