@@ -595,3 +595,54 @@ test("an invalid or non-file package.json does not stop the scan", () => {
     }
   }
 });
+
+// ---- Agent skill installs and env finding detail -------------------------
+
+test("a project-installed skill copy under .claude or .agents is not scanned, webhook stays HIGH", () =>
+  withFixture("stripe-webhook-bad", (dir) => {
+    for (const root of [".claude", ".agents"]) {
+      write(dir, `${root}/skills/production-readiness/scripts/scan/lib/detectors.mjs`, "const x = stripe.webhooks.constructEvent(body, sig, secret);\n");
+      write(dir, `${root}/skills/production-readiness/references/CHECKLIST.md`, `STRIPE_SECRET_KEY=${FAKES.SK_LIVE}\n`);
+    }
+    const r = scanProject(dir);
+    const hits = find(r, "stripe-webhook-unverified");
+    assert.equal(hits.length, 1);
+    assert.equal(hits[0].severity, "HIGH");
+    assert.ok(!r.findings.some((f) => f.file.startsWith(".claude") || f.file.startsWith(".agents")));
+  }));
+
+test("committed env file names the kind of key it contains, masked", { skip: !hasGit() }, () => {
+  const body = [
+    `STRIPE_SECRET_KEY=${FAKES.SK_LIVE}`,
+    `STRIPE_RESTRICTED=${FAKES.RK_LIVE}`,
+    `STRIPE_TEST=${FAKES.SK_TEST}`,
+    `STRIPE_WEBHOOK_SECRET=${FAKES.WHSEC}`,
+    `SUPABASE_SERVICE_ROLE_KEY=${FAKES.JWT_SERVICE_ROLE}`,
+    `SUPABASE_SECRET=${FAKES.SB_SECRET}`,
+    `SUPABASE_ANON=${FAKES.JWT_ANON}`,
+    "",
+  ].join("\n");
+  withProject({ "package.json": "{}", ".env": body }, (dir) => {
+    const git = (...a) => execFileSync("git", ["-C", dir, ...a], { stdio: "ignore" });
+    git("init", "-q");
+    git("add", "-A", "-f");
+    const [hit] = find(scanProject(dir), "committed-env-file");
+    assert.equal(hit.severity, "HIGH");
+    for (const kind of ["Stripe live secret key", "Stripe live restricted key", "Stripe test secret key", "Stripe webhook signing secret", "Supabase service_role key", "Supabase secret key"]) {
+      assert.ok(hit.message.includes(kind), kind);
+    }
+    assert.ok(hit.message.includes("sk_l********"));
+    for (const secret of Object.values(FAKES)) assert.ok(!hit.message.includes(secret.slice(0, 12) + secret.slice(12, 20)), "full value leaked");
+    assert.ok(!/anon/i.test(hit.message));
+  });
+});
+
+test("committed env file without a secret-shaped value keeps the plain message", { skip: !hasGit() }, () => {
+  withProject({ "package.json": "{}", ".env": "PORT=3000\n" }, (dir) => {
+    const git = (...a) => execFileSync("git", ["-C", dir, ...a], { stdio: "ignore" });
+    git("init", "-q");
+    git("add", "-A", "-f");
+    const [hit] = find(scanProject(dir), "committed-env-file");
+    assert.ok(!hit.message.includes("It contains"));
+  });
+});
