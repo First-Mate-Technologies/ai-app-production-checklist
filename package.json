@@ -1,0 +1,44 @@
+{
+  "name": "ai-app-production-checklist",
+  "version": "1.0.0",
+  "description": "The FINISH kit: a production checklist, a Supabase RLS audit and a local launch-blocker scanner for AI-built apps.",
+  "type": "module",
+  "license": "MIT",
+  "author": "First Mate Technologies (https://www.firstmate.tech)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/First-Mate-Technologies/ai-app-production-checklist.git"
+  },
+  "homepage": "https://github.com/First-Mate-Technologies/ai-app-production-checklist#readme",
+  "bugs": {
+    "url": "https://github.com/First-Mate-Technologies/ai-app-production-checklist/issues"
+  },
+  "bin": {
+    "ai-app-scan": "scan/cli.mjs"
+  },
+  "files": [
+    "scan/cli.mjs",
+    "scan/lib",
+    "sql",
+    "skills",
+    "scripts/install-skill.sh",
+    "CHECKLIST.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test scan/test/*.test.mjs",
+    "scan": "node scan/cli.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "vibe-coding",
+    "production-readiness",
+    "supabase",
+    "row-level-security",
+    "checklist",
+    "security-scan"
+  ]
+}

@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+*.log
+
+.env
+.env.*
+!.env.example
+
+# The scanner fixtures contain deliberately fake keys and fake .env files.
+!scan/test/fixtures/**
