@@ -70,6 +70,15 @@ codex exec -s workspace-write "try to break my app and write test cases"
 
 Keep `"Skill"` in the list: without it, headless Claude Code denies the skill call and may report that the skill failed to load. A headless `production-readiness` run takes about 3 to 8 minutes and costs roughly $0.5 to $0.8 in Claude Code (about 40k to 55k tokens in Codex). It writes `PRODUCTION_READINESS.md` without asking, and it never installs dependencies or runs your tests, linter or build.
 
+`break-my-app` costs more than the audit. Rough numbers from our runs (Claude Code; Codex takes similar time):
+
+| Run | Time | Cost (Claude Code) |
+| --- | --- | --- |
+| Design only (`try to break my app`) | about 6 to 10 min | about $1 to $1.20 |
+| With test execution (`... and yes, run the tests`) | about 15 to 27 min | about $2.50 to $3.50 |
+
+Everything runs on your own agent subscription or API key; the kit sends nothing anywhere.
+
 Interactive users just approve the prompts. There is no plugin manifest yet.
 
 ## What the scanner checks
