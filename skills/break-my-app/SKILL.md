@@ -24,7 +24,7 @@ The rule behind it: the agent that built the code does not grade the code. Cases
 
 Read README and docs, route and page files, forms, API handlers, DB schema and migrations, auth and role code. Write `qa/REQUIREMENTS.md` using `references/templates.md`: numbered user-facing behaviors (`R-01`...), roles, money and data flows, stated limits, and assumptions. Also write `qa/SURFACE.md`: the public surface only (URLs, HTTP methods, request fields and their stated limits, roles, visible UI states). No code, no internals.
 
-Interactive session: show the requirements summary and ask the user to confirm or correct before generating cases. Non-interactive (`claude -p`, `codex exec`, no way to ask): proceed, mark every guess under `## Assumptions` in the file, and repeat the assumptions in your final summary.
+Interactive chat where the user is present: show the requirements summary and ask them to confirm or correct it before step 2. Headless or unsure (`claude -p`, `codex exec`, any run where you cannot be sure a reply will come): do NOT stop and wait. Proceed through step 3, mark every guess under `## Assumptions` in the file, repeat the assumptions in your final summary, and invite corrections there. Stopping to ask is only right when the user can actually answer.
 
 ### 2. Independent case design
 
